@@ -2,39 +2,56 @@ package com.example.camerapicturesviewer;
 
 import java.io.File;
 
+import com.jess.ui.TwoWayGridView;
+
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.Display;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 public class PictureAdapter extends BaseAdapter {
-    private File[] pictures;
+    private String[] pictures;
     private Context context;
+    File DCIMDirectory;
 
     public PictureAdapter(Context c) {
-        File DCIMDirectory = new File(Environment.getExternalStorageDirectory(), "DCIM/Camera/");
-        pictures = DCIMDirectory.listFiles();
+        DCIMDirectory = new File(Environment.getExternalStorageDirectory(), "DCIM/Camera/");
+        pictures = DCIMDirectory.list();
         context = c;
+        if (pictures == null) {
+            Toast.makeText(context, context.getString(R.string.empty_dir), Toast.LENGTH_LONG).show();
+        }
+
     }
 
     @Override
     public int getCount() {
-        return pictures.length;
+        if (pictures != null)
+            return pictures.length;
+        else
+            return 0;
     }
 
     @Override
     public Object getItem(int index) {
-        return pictures[index];
+        return DCIMDirectory.getPath() + "/" + pictures[index];
     }
 
     @Override
@@ -61,6 +78,7 @@ public class PictureAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ImageView pictureView;
+
         if (convertView == null) {
             Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
             int orientation = display.getOrientation();
@@ -76,19 +94,20 @@ public class PictureAdapter extends BaseAdapter {
             }
             pictureHeight = pictureWidth;
             pictureView = new ImageView(context);
-            pictureView.setLayoutParams(new GridView.LayoutParams(pictureHeight, pictureWidth));
+            pictureView.setLayoutParams(new TwoWayGridView.LayoutParams(pictureHeight, pictureWidth));
             pictureView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            pictureView.setPadding(0, 0, 0, 0);
-
+            pictureView.setPadding(1, 1, 1, 1);
         } else
             pictureView = (ImageView) convertView;
         try {
-            pictureView
-                    .setImageBitmap(getThumbnail(context.getContentResolver(), pictures[position].getAbsolutePath()));
+            pictureView.setImageBitmap(getThumbnail(context.getContentResolver(), DCIMDirectory.getPath() + "/"
+                    + pictures[position]));
+
         } catch (Exception e) {
 
             e.printStackTrace();
         }
         return pictureView;
     }
+
 }

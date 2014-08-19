@@ -1,26 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:scrollbars="horizontal|vertical" >
-
-    <GridView
-        android:id="@+id/picture_grid_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:alwaysDrawnWithCache="true"
-        android:clipChildren="true"
-        android:gravity="fill"
-        android:horizontalSpacing="1dp"
-        android:numColumns="auto_fit"
-        android:padding="0dp"
-        android:scrollbars="horizontal|vertical"
-        android:scrollingCache="true"
-        android:smoothScrollbar="true"
-        android:stretchMode="none"
-        android:verticalSpacing="1dp" >
-    </GridView>
-
-</ScrollView>
+<com.jess.ui.TwoWayGridView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/pictures_grid"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    app:horizontalSpacing="1dp"
+    app:numColumns="auto_fit"
+    app:scrollDirectionLandscape="horizontal"
+    app:scrollDirectionPortrait="horizontal"
+    app:stretchMode="none"
+    app:verticalSpacing="1dp" />

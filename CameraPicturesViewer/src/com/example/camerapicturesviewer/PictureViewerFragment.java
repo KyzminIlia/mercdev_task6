@@ -1,26 +1,23 @@
 package com.example.camerapicturesviewer;
 
 import java.io.File;
-
-import android.app.Activity;
+import com.jess.ui.TwoWayAdapterView;
+import com.jess.ui.TwoWayGridView;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.GridView;
 
-public class PictureViewerFragment extends Fragment implements OnItemClickListener {
+public class PictureViewerFragment extends Fragment implements TwoWayAdapterView.OnItemClickListener {
     public static final String FRAGMENT_TAG = PictureViewerFragment.class.getSimpleName();
-    private GridView pictureGridView;
+    private PictureAdapter pictureAdapter;
+    private TwoWayGridView pictureGridView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -30,7 +27,7 @@ public class PictureViewerFragment extends Fragment implements OnItemClickListen
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        pictureGridView = (GridView) view.findViewById(R.id.picture_grid_view);
+        pictureGridView = (TwoWayGridView) view.findViewById(R.id.pictures_grid);
         pictureGridView.setAdapter(new PictureAdapter(getActivity()));
         pictureGridView.setOnItemClickListener(this);
         Display display = getActivity().getWindowManager().getDefaultDisplay();
@@ -43,34 +40,35 @@ public class PictureViewerFragment extends Fragment implements OnItemClickListen
                 pictureWidth = (int) (display.getWidth() / 3.5);
                 filesCount = pictureGridView.getAdapter().getCount();
                 count = (int) Math.ceil(((double) pictureGridView.getAdapter().getCount() / 2));
-                pictureGridView.setNumColumns(count);
+                pictureGridView.setNumRows(2);
                 break;
             case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
                 pictureWidth = (int) (display.getWidth() / 2.5);
                 filesCount = pictureGridView.getAdapter().getCount();
                 count = (int) Math.ceil(((double) pictureGridView.getAdapter().getCount() / 4));
-                pictureGridView.setNumColumns(count);
+                pictureGridView.setNumRows(4);
                 break;
         }
-        pictureGridView.setHorizontalScrollBarEnabled(true);
-        pictureGridView.setVerticalScrollBarEnabled(false);
+
         pictureGridView.setColumnWidth(pictureWidth);
         super.onViewCreated(view, savedInstanceState);
+
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
+        pictureAdapter = new PictureAdapter(getActivity());
         super.onCreate(savedInstanceState);
     }
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+    public void onItemClick(TwoWayAdapterView<?> parent, View view, int position, long id) {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
-        intent.setDataAndType(
-                Uri.parse("file://" + ((File) (pictureGridView.getAdapter().getItem(position))).getPath()), "image/*");
+        intent.setDataAndType(Uri.parse("file://" + ((String) (pictureGridView.getAdapter().getItem(position)))),
+                "image/*");
         startActivity(intent);
 
     }
+
 }
