@@ -36,14 +36,20 @@ public class PictureViewerFragment extends Fragment implements OnItemClickListen
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         int orientation = display.getOrientation();
         int pictureWidth = 0;
+        int count = 0;
+        int filesCount = 0;
         switch (orientation) {
             case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
                 pictureWidth = (int) (display.getWidth() / 3.5);
-                pictureGridView.setNumColumns((int) (pictureGridView.getAdapter().getCount() / 2));
+                filesCount = pictureGridView.getAdapter().getCount();
+                count = (int) Math.ceil(((double) pictureGridView.getAdapter().getCount() / 2));
+                pictureGridView.setNumColumns(count);
                 break;
             case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
                 pictureWidth = (int) (display.getWidth() / 2.5);
-                pictureGridView.setNumColumns((int) (pictureGridView.getAdapter().getCount() / 4));
+                filesCount = pictureGridView.getAdapter().getCount();
+                count = (int) Math.ceil(((double) pictureGridView.getAdapter().getCount() / 4));
+                pictureGridView.setNumColumns(count);
                 break;
         }
         pictureGridView.setHorizontalScrollBarEnabled(true);
