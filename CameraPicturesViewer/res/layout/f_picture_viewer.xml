@@ -4,9 +4,8 @@
     android:id="@+id/pictures_grid"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:padding="1dp"
     app:horizontalSpacing="1dp"
-    app:numColumns="auto_fit"
     app:scrollDirectionLandscape="horizontal"
     app:scrollDirectionPortrait="horizontal"
-    app:stretchMode="none"
     app:verticalSpacing="1dp" />
