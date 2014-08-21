@@ -20,3 +20,15 @@ CameraPicturesViewer/bin/res/crunch/drawable-xhdpi/ic_launcher.png
 CameraPicturesViewer/bin/resources.ap_
 CameraPicturesViewer/gen/com/example/camerapicturesviewer/BuildConfig.java
 CameraPicturesViewer/gen/com/example/camerapicturesviewer/R.java
+CameraPicturesViewer/bin/R.txt
+CameraPicturesViewer/bin/classes/com/example/camerapicturesviewer/PictureViewerFragment$1.class
+CameraPicturesViewer/bin/classes/com/example/camerapicturesviewer/R$styleable.class
+CameraPicturesViewer/bin/classes/com/jess/ui/R$attr.class
+CameraPicturesViewer/bin/classes/com/jess/ui/R$drawable.class
+CameraPicturesViewer/bin/classes/com/jess/ui/R$id.class
+CameraPicturesViewer/bin/classes/com/jess/ui/R$layout.class
+CameraPicturesViewer/bin/classes/com/jess/ui/R$string.class
+CameraPicturesViewer/bin/classes/com/jess/ui/R$styleable.class
+CameraPicturesViewer/bin/classes/com/jess/ui/R.class
+CameraPicturesViewer/bin/dexedLibs/lib-db4891dfb3a65c301d376a6e5fae97e8.jar
+CameraPicturesViewer/gen/com/jess/ui/R.java

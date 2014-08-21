@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.os.Environment;
@@ -75,12 +77,12 @@ public class PictureAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ImageView pictureView;
-
+        int pictureWidth = 0;
+        int pictureHeight = 0;
         if (convertView == null) {
             Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
             int orientation = display.getOrientation();
-            int pictureWidth = 0;
-            int pictureHeight = 0;
+
             switch (orientation) {
                 case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
                     pictureWidth = (int) (display.getWidth() / 3.5);
@@ -92,50 +94,56 @@ public class PictureAdapter extends BaseAdapter {
             pictureHeight = pictureWidth;
             pictureView = new ImageView(context);
             pictureView.setLayoutParams(new TwoWayGridView.LayoutParams(pictureHeight, pictureWidth));
-            pictureView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            pictureView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            pictureView.setPadding(0, 0, 0, 0);
 
         } else
             pictureView = (ImageView) convertView;
         try {
             if (pictures[position].substring(pictures[position].lastIndexOf("."),
                     pictures[position].lastIndexOf(".") + 4).equals(".jpg")) {
-                Bitmap cameraPictureThumbnail = getThumbnail(context.getContentResolver(), DCIMDirectory.getPath()
-                        + "/" + pictures[position]);
-                Bitmap rotatedThumbnail = null;
+                Options options = new BitmapFactory.Options();
+                options.inScaled = false;
+                options.inDither = false;
+                Bitmap scaledPicture = Bitmap.createScaledBitmap(
+                        BitmapFactory.decodeFile(DCIMDirectory.getPath() + "/" + pictures[position], options),
+                        pictureWidth, pictureHeight, false);
+
+                Bitmap rotatedPicture = null;
                 Matrix matrix = new Matrix();
                 ExifInterface exif = new ExifInterface(DCIMDirectory.getPath() + "/" + pictures[position]);
                 int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
                 switch (orientation) {
                     case ExifInterface.ORIENTATION_ROTATE_90:
                         matrix.postRotate(90);
-                        rotatedThumbnail = Bitmap.createBitmap(cameraPictureThumbnail, 0, 0,
-                                cameraPictureThumbnail.getWidth(), cameraPictureThumbnail.getHeight(), matrix, true);
+                        rotatedPicture = Bitmap.createBitmap(scaledPicture, 0, 0, scaledPicture.getWidth(),
+                                scaledPicture.getHeight(), matrix, true);
                         Log.d(ADAPTER_TAG, "orientation 90");
                         break;
                     case ExifInterface.ORIENTATION_ROTATE_180:
                         matrix.postRotate(180);
-                        rotatedThumbnail = Bitmap.createBitmap(cameraPictureThumbnail, 0, 0,
-                                cameraPictureThumbnail.getWidth(), cameraPictureThumbnail.getHeight(), matrix, true);
+                        rotatedPicture = Bitmap.createBitmap(scaledPicture, 0, 0, scaledPicture.getWidth(),
+                                scaledPicture.getHeight(), matrix, true);
                         Log.d(ADAPTER_TAG, "orientation 180");
                         break;
                     case ExifInterface.ORIENTATION_ROTATE_270:
                         matrix.postRotate(270);
-                        rotatedThumbnail = Bitmap.createBitmap(cameraPictureThumbnail, 0, 0,
-                                cameraPictureThumbnail.getWidth(), cameraPictureThumbnail.getHeight(), matrix, true);
+                        rotatedPicture = Bitmap.createBitmap(scaledPicture, 0, 0, scaledPicture.getWidth(),
+                                scaledPicture.getHeight(), matrix, true);
                         Log.d(ADAPTER_TAG, "orientation 270");
                         break;
                     case ExifInterface.ORIENTATION_NORMAL:
                         Log.d(ADAPTER_TAG, "orientation normal");
-                        rotatedThumbnail = cameraPictureThumbnail;
+                        rotatedPicture = scaledPicture;
                         break;
                     case ExifInterface.ORIENTATION_UNDEFINED:
                         Log.d(ADAPTER_TAG, "orientation undefined");
-                        rotatedThumbnail = cameraPictureThumbnail;
+                        rotatedPicture = scaledPicture;
                         break;
 
                 }
 
-                pictureView.setImageBitmap(rotatedThumbnail);
+                pictureView.setImageBitmap(rotatedPicture);
             }
 
         } catch (Exception e) {

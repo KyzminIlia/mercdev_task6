@@ -9,9 +9,6 @@ public class PictureViewerActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle retainInstance) {
         super.onCreate(retainInstance);
-        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         if (getViewerFragment() == null) {
             PictureViewerFragment photoFragment = new PictureViewerFragment();
             getSupportFragmentManager().beginTransaction()
