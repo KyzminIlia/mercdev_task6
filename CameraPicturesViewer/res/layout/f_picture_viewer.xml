@@ -14,7 +14,6 @@
         app:horizontalSpacing="1dp"
         app:scrollDirectionLandscape="horizontal"
         app:scrollDirectionPortrait="horizontal"
-        app:stretchMode="none"
         app:verticalSpacing="1dp" />
 
     <ProgressBar

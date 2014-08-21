@@ -4,6 +4,7 @@ import com.jess.ui.TwoWayAdapterView;
 import com.jess.ui.TwoWayGridView;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ProgressBar;
 
 public class PictureViewerFragment extends Fragment implements TwoWayAdapterView.OnItemClickListener {
@@ -53,19 +55,27 @@ public class PictureViewerFragment extends Fragment implements TwoWayAdapterView
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         int orientation = display.getOrientation();
         int pictureWidth = 0;
+        int pictureHeight = 0;
+        Rect rectangle = new Rect();
+        getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
+        int contentViewTop= 
+               getActivity().getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
+            int statusBar = contentViewTop - rectangle.top;
         switch (orientation) {
             case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
                 pictureWidth = (int) (display.getWidth() / 3.5);
                 pictureGridView.setNumRows(2);
+                pictureHeight = (display.getHeight() - statusBar) / 2;
                 break;
             case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
                 pictureWidth = (int) (display.getWidth() / 2.5);
                 pictureGridView.setNumRows(4);
+                pictureHeight = (display.getHeight() - statusBar) / 4;
                 break;
         }
 
         pictureGridView.setColumnWidth(pictureWidth);
-        pictureGridView.setRowHeight(pictureWidth);
+       pictureGridView.setRowHeight(pictureHeight);
         super.onViewCreated(view, savedInstanceState);
 
     }

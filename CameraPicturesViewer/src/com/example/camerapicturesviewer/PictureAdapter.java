@@ -10,6 +10,7 @@ import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.graphics.BitmapFactory.Options;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
@@ -19,6 +20,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -80,6 +82,10 @@ public class PictureAdapter extends BaseAdapter {
         ImageView pictureView;
         int pictureWidth = 0;
         int pictureHeight = 0;
+        Rect rectangle = new Rect();
+        ((Activity) context).getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
+        int contentViewTop = ((Activity) context).getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
+        int statusBar = contentViewTop - rectangle.top;
         if (convertView == null) {
             Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
             int orientation = display.getOrientation();
@@ -87,14 +93,16 @@ public class PictureAdapter extends BaseAdapter {
             switch (orientation) {
                 case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
                     pictureWidth = (int) (display.getWidth() / 3.5);
+                    pictureHeight = (display.getHeight() - statusBar) / 2;
                     break;
                 case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
                     pictureWidth = (int) (display.getWidth() / 2.5);
+                    pictureHeight = (display.getHeight() - statusBar) / 4;
                     break;
             }
             pictureHeight = pictureWidth;
             pictureView = new ImageView(context);
-            pictureView.setLayoutParams(new TwoWayGridView.LayoutParams(pictureHeight, pictureWidth));
+            pictureView.setLayoutParams(new TwoWayGridView.LayoutParams(pictureWidth, pictureHeight));
             pictureView.setScaleType(ImageView.ScaleType.FIT_CENTER);
             pictureView.setPadding(0, 0, 0, 0);
 
@@ -105,12 +113,18 @@ public class PictureAdapter extends BaseAdapter {
             switch (displayOrientation) {
                 case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
                     pictureWidth = (int) (display.getWidth() / 3.5);
+                    pictureHeight = (display.getHeight() - statusBar) / 2;
                     break;
                 case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
                     pictureWidth = (int) (display.getWidth() / 2.5);
+                    pictureHeight = (display.getHeight() - statusBar) / 4;
                     break;
             }
-            pictureHeight = pictureWidth;
+            pictureView = new ImageView(context);
+            pictureView.setLayoutParams(new TwoWayGridView.LayoutParams(pictureWidth, pictureHeight));
+            pictureView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            pictureView.setPadding(0, 0, 0, 0);
+
         }
         try {
             if (pictures[position].substring(pictures[position].lastIndexOf("."),
