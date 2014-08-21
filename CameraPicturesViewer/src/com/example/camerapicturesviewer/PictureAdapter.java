@@ -1,6 +1,7 @@
 package com.example.camerapicturesviewer;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -94,21 +95,33 @@ public class PictureAdapter extends BaseAdapter {
             pictureHeight = pictureWidth;
             pictureView = new ImageView(context);
             pictureView.setLayoutParams(new TwoWayGridView.LayoutParams(pictureHeight, pictureWidth));
-            pictureView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            pictureView.setScaleType(ImageView.ScaleType.FIT_CENTER);
             pictureView.setPadding(0, 0, 0, 0);
 
-        } else
+        } else {
             pictureView = (ImageView) convertView;
+            Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
+            int displayOrientation = display.getOrientation();
+            switch (displayOrientation) {
+                case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
+                    pictureWidth = (int) (display.getWidth() / 3.5);
+                    break;
+                case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
+                    pictureWidth = (int) (display.getWidth() / 2.5);
+                    break;
+            }
+            pictureHeight = pictureWidth;
+        }
         try {
             if (pictures[position].substring(pictures[position].lastIndexOf("."),
                     pictures[position].lastIndexOf(".") + 4).equals(".jpg")) {
                 Options options = new BitmapFactory.Options();
                 options.inScaled = false;
                 options.inDither = false;
-                Bitmap scaledPicture = Bitmap.createScaledBitmap(
-                        BitmapFactory.decodeFile(DCIMDirectory.getPath() + "/" + pictures[position], options),
-                        pictureWidth, pictureHeight, false);
-
+                Log.d(ADAPTER_TAG, "try to decode file " + DCIMDirectory.getAbsolutePath() + "/" + pictures[position]);
+                WeakReference<Bitmap> scaledPicture = new WeakReference<Bitmap>(Bitmap.createScaledBitmap(
+                        BitmapFactory.decodeFile(DCIMDirectory.getAbsolutePath() + "/" + pictures[position], options),
+                        pictureWidth, pictureHeight, false));
                 Bitmap rotatedPicture = null;
                 Matrix matrix = new Matrix();
                 ExifInterface exif = new ExifInterface(DCIMDirectory.getPath() + "/" + pictures[position]);
@@ -116,29 +129,29 @@ public class PictureAdapter extends BaseAdapter {
                 switch (orientation) {
                     case ExifInterface.ORIENTATION_ROTATE_90:
                         matrix.postRotate(90);
-                        rotatedPicture = Bitmap.createBitmap(scaledPicture, 0, 0, scaledPicture.getWidth(),
-                                scaledPicture.getHeight(), matrix, true);
+                        rotatedPicture = Bitmap.createBitmap(scaledPicture.get(), 0, 0, scaledPicture.get().getWidth(),
+                                scaledPicture.get().getHeight(), matrix, true);
                         Log.d(ADAPTER_TAG, "orientation 90");
                         break;
                     case ExifInterface.ORIENTATION_ROTATE_180:
                         matrix.postRotate(180);
-                        rotatedPicture = Bitmap.createBitmap(scaledPicture, 0, 0, scaledPicture.getWidth(),
-                                scaledPicture.getHeight(), matrix, true);
+                        rotatedPicture = Bitmap.createBitmap(scaledPicture.get(), 0, 0, scaledPicture.get().getWidth(),
+                                scaledPicture.get().getHeight(), matrix, true);
                         Log.d(ADAPTER_TAG, "orientation 180");
                         break;
                     case ExifInterface.ORIENTATION_ROTATE_270:
                         matrix.postRotate(270);
-                        rotatedPicture = Bitmap.createBitmap(scaledPicture, 0, 0, scaledPicture.getWidth(),
-                                scaledPicture.getHeight(), matrix, true);
+                        rotatedPicture = Bitmap.createBitmap(scaledPicture.get(), 0, 0, scaledPicture.get().getWidth(),
+                                scaledPicture.get().getHeight(), matrix, true);
                         Log.d(ADAPTER_TAG, "orientation 270");
                         break;
                     case ExifInterface.ORIENTATION_NORMAL:
                         Log.d(ADAPTER_TAG, "orientation normal");
-                        rotatedPicture = scaledPicture;
+                        rotatedPicture = scaledPicture.get();
                         break;
                     case ExifInterface.ORIENTATION_UNDEFINED:
                         Log.d(ADAPTER_TAG, "orientation undefined");
-                        rotatedPicture = scaledPicture;
+                        rotatedPicture = scaledPicture.get();
                         break;
 
                 }
