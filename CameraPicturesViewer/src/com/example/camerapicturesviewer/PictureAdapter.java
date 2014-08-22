@@ -1,7 +1,11 @@
 package com.example.camerapicturesviewer;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -10,10 +14,14 @@ import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.BitmapFactory.Options;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -23,6 +31,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.jess.ui.TwoWayGridView;
@@ -31,16 +40,20 @@ public class PictureAdapter extends BaseAdapter {
     public static final String ADAPTER_TAG = PictureAdapter.class.getSimpleName();
     private String[] pictures;
     private Context context;
-    File DCIMDirectory;
+    private File DCIMDirectory;
+    private List<String> downloadedPictures;
+    private ImageView pictureView;
+    private ProgressBar loadingImageProgressBar;
 
-    public PictureAdapter(Context c) {
+    public PictureAdapter(Context c, ProgressBar progressBar) {
         DCIMDirectory = new File(Environment.getExternalStorageDirectory(), "DCIM/Camera/");
         pictures = DCIMDirectory.list();
         context = c;
         if (pictures == null) {
             Toast.makeText(context, context.getString(R.string.empty_dir), Toast.LENGTH_LONG).show();
         }
-
+        downloadedPictures = new ArrayList<String>();
+        loadingImageProgressBar = progressBar;
     }
 
     @Override
@@ -61,84 +74,102 @@ public class PictureAdapter extends BaseAdapter {
         return 0;
     }
 
-    public static Bitmap getThumbnail(ContentResolver cr, String path) throws Exception {
-
-        Cursor ca = cr.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                new String[] { MediaStore.MediaColumns._ID }, MediaStore.MediaColumns.DATA + "=?",
-                new String[] { path }, null);
-        if (ca != null && ca.moveToFirst()) {
-            int id = ca.getInt(ca.getColumnIndex(MediaStore.MediaColumns._ID));
-            ca.close();
-            return MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MICRO_KIND, null);
-        }
-
-        ca.close();
-        return null;
-
-    }
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ImageView pictureView;
         int pictureWidth = 0;
         int pictureHeight = 0;
+        ViewHolder holder = new ViewHolder();
+        LoadImageAsyncTask loadImage = new LoadImageAsyncTask();
         Rect rectangle = new Rect();
         ((Activity) context).getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
         int contentViewTop = ((Activity) context).getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
         int statusBar = contentViewTop - rectangle.top;
+
         if (convertView == null) {
             Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
-            int orientation = display.getOrientation();
+            int screenOrientation = display.getOrientation();
 
-            switch (orientation) {
+            switch (screenOrientation) {
                 case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
                     pictureWidth = (int) (display.getWidth() / 3.5);
-                    pictureHeight = (display.getHeight() - statusBar) / 2;
+
                     break;
                 case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
                     pictureWidth = (int) (display.getWidth() / 2.5);
-                    pictureHeight = (display.getHeight() - statusBar) / 4;
+
                     break;
             }
             pictureHeight = pictureWidth;
             pictureView = new ImageView(context);
             pictureView.setLayoutParams(new TwoWayGridView.LayoutParams(pictureWidth, pictureHeight));
-            pictureView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            pictureView.setScaleType(ImageView.ScaleType.CENTER);
             pictureView.setPadding(0, 0, 0, 0);
-
+            holder.picture = pictureView;
+            pictureView.setTag(holder);
         } else {
-            pictureView = (ImageView) convertView;
+            holder = (ViewHolder) convertView.getTag();
+        }
+
+        pictureHeight = pictureWidth;
+        String pictureDir = DCIMDirectory.getAbsolutePath() + "/" + pictures[position];
+
+        loadImage.execute(pictureDir);
+        try {
+
+            holder.picture.setImageDrawable(loadImage.get());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        return pictureView;
+    }
+
+    class LoadImageAsyncTask extends AsyncTask<String, Void, Drawable> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pictureView.setImageResource(R.drawable.gray_background_loaded);
+            loadingImageProgressBar.setVisibility(ProgressBar.VISIBLE);
+
+        }
+
+        @Override
+        protected Drawable doInBackground(String... params) {
+            int pictureWidth = 0;
+            int pictureHeight = 0;
+            Drawable pictureDrawable = null;
             Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
-            int displayOrientation = display.getOrientation();
-            switch (displayOrientation) {
+            int screenOrientation = display.getOrientation();
+
+            switch (screenOrientation) {
                 case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
                     pictureWidth = (int) (display.getWidth() / 3.5);
-                    pictureHeight = (display.getHeight() - statusBar) / 2;
+
                     break;
                 case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
                     pictureWidth = (int) (display.getWidth() / 2.5);
-                    pictureHeight = (display.getHeight() - statusBar) / 4;
+
                     break;
             }
-            pictureView = new ImageView(context);
-            pictureView.setLayoutParams(new TwoWayGridView.LayoutParams(pictureWidth, pictureHeight));
-            pictureView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            pictureView.setPadding(0, 0, 0, 0);
-
-        }
-        try {
-            if (pictures[position].substring(pictures[position].lastIndexOf("."),
-                    pictures[position].lastIndexOf(".") + 4).equals(".jpg")) {
+            pictureHeight = pictureWidth;
+            if (params[0].substring(params[0].lastIndexOf("."), params[0].lastIndexOf(".") + 4).equals(".jpg")) {
                 Options options = new BitmapFactory.Options();
-                options.inScaled = false;
-                options.inDither = false;
-                Log.d(ADAPTER_TAG, "try to decode file " + DCIMDirectory.getAbsolutePath() + "/" + pictures[position]);
+                downloadedPictures.add(params[0]);
+                options.inScaled = true;
+                options.inDither = true;
+                Log.d(ADAPTER_TAG, "try to decode file " + params[0]);
                 WeakReference<Bitmap> scaledPicture = new WeakReference<Bitmap>(Bitmap.createScaledBitmap(
-                        BitmapFactory.decodeFile(DCIMDirectory.getAbsolutePath() + "/" + pictures[position], options),
-                        pictureWidth, pictureHeight, false));
+                        BitmapFactory.decodeFile(params[0], options), pictureWidth, pictureHeight, false));
                 Bitmap rotatedPicture = null;
                 Matrix matrix = new Matrix();
-                ExifInterface exif = new ExifInterface(DCIMDirectory.getPath() + "/" + pictures[position]);
+                ExifInterface exif = null;
+                try {
+                    exif = new ExifInterface(params[0]);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
                 switch (orientation) {
                     case ExifInterface.ORIENTATION_ROTATE_90:
@@ -170,12 +201,23 @@ public class PictureAdapter extends BaseAdapter {
 
                 }
 
-                pictureView.setImageBitmap(rotatedPicture);
-            }
+                pictureDrawable = new BitmapDrawable(context.getResources(), rotatedPicture);
 
-        } catch (Exception e) {
-            e.printStackTrace();
+            }
+            return pictureDrawable;
         }
-        return pictureView;
+
+        @Override
+        protected void onPostExecute(Drawable result) {
+            pictureView.setImageDrawable(result);
+            loadingImageProgressBar.setVisibility(ProgressBar.INVISIBLE);
+            super.onPostExecute(result);
+        }
+
     }
+
+    class ViewHolder {
+        ImageView picture;
+    }
+
 }

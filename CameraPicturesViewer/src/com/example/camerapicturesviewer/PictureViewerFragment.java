@@ -32,25 +32,8 @@ public class PictureViewerFragment extends Fragment implements TwoWayAdapterView
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         pictureGridView = (TwoWayGridView) view.findViewById(R.id.pictures_grid);
         imageLoadingProgressBar = (ProgressBar) view.findViewById(R.id.image_loading_progress_bar);
-        new AsyncTask<View, Void, Void>() {
 
-            protected void onPreExecute() {
-                pictureGridView.setAdapter(new PictureAdapter(getActivity()));
-            };
-
-            @Override
-            protected void onPostExecute(Void result) {
-                imageLoadingProgressBar.setVisibility(ProgressBar.INVISIBLE);
-                super.onPostExecute(result);
-            }
-
-            @Override
-            protected Void doInBackground(View... params) {
-                return null;
-            }
-
-        }.execute(pictureGridView, imageLoadingProgressBar);
-
+        pictureGridView.setAdapter(new PictureAdapter(getActivity(), imageLoadingProgressBar));
         pictureGridView.setOnItemClickListener(this);
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         int orientation = display.getOrientation();
@@ -58,9 +41,8 @@ public class PictureViewerFragment extends Fragment implements TwoWayAdapterView
         int pictureHeight = 0;
         Rect rectangle = new Rect();
         getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
-        int contentViewTop= 
-               getActivity().getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
-            int statusBar = contentViewTop - rectangle.top;
+        int contentViewTop = getActivity().getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
+        int statusBar = contentViewTop - rectangle.top;
         switch (orientation) {
             case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
                 pictureWidth = (int) (display.getWidth() / 3.5);
@@ -75,13 +57,14 @@ public class PictureViewerFragment extends Fragment implements TwoWayAdapterView
         }
 
         pictureGridView.setColumnWidth(pictureWidth);
-       pictureGridView.setRowHeight(pictureHeight);
+        pictureGridView.setRowHeight(pictureHeight);
         super.onViewCreated(view, savedInstanceState);
 
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        setRetainInstance(true);
         super.onCreate(savedInstanceState);
     }
 
