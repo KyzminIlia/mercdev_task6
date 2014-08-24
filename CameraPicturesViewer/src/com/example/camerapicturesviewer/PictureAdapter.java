@@ -136,49 +136,9 @@ public class PictureAdapter extends BaseAdapter {
 				pictureDir.lastIndexOf(".") + 4).equals(".jpg")) {
 			Log.d(ADAPTER_TAG, "try to decode file " + pictureDir);
 
-			ExifInterface exif = null;
-			try {
-				exif = new ExifInterface(pictureDir);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			int orientation = exif.getAttributeInt(
-					ExifInterface.TAG_ORIENTATION,
-					ExifInterface.ORIENTATION_NORMAL);
-			switch (orientation) {
-			case ExifInterface.ORIENTATION_ROTATE_90:
-				Picasso.with(context).load(new File(pictureDir))
-						.resize(pictureWidth, pictureHeight).rotate(90)
-						.centerCrop().into(pictureView);
-				Log.d(ADAPTER_TAG, "orientation 90");
-				break;
-			case ExifInterface.ORIENTATION_ROTATE_180:
-				Picasso.with(context).load(new File(pictureDir))
-						.resize(pictureWidth, pictureHeight).rotate(180)
-						.centerCrop().into(pictureView);
-
-				Log.d(ADAPTER_TAG, "orientation 180");
-				break;
-			case ExifInterface.ORIENTATION_ROTATE_270:
-				Picasso.with(context).load(new File(pictureDir))
-						.resize(pictureWidth, pictureHeight).rotate(270)
-						.centerCrop().into(pictureView);
-
-				Log.d(ADAPTER_TAG, "orientation 270");
-				break;
-			case ExifInterface.ORIENTATION_NORMAL:
-				Picasso.with(context).load(new File(pictureDir))
-						.resize(pictureWidth, pictureHeight).rotate(0)
-						.centerCrop().into(pictureView);
-
-				break;
-			case ExifInterface.ORIENTATION_UNDEFINED:
-				Picasso.with(context).load(new File(pictureDir))
-						.resize(pictureWidth, pictureHeight).rotate(0)
-						.centerCrop().into(pictureView);
-				break;
-
-			}
+			Picasso.with(context).load(new File(pictureDir))
+					.resize(pictureWidth, pictureHeight).centerCrop()
+					.into(pictureView);
 
 		}
 
