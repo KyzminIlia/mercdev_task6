@@ -38,111 +38,101 @@ import com.jess.ui.TwoWayGridView;
 import com.squareup.picasso.Picasso;
 
 public class PictureAdapter extends BaseAdapter {
-	public static final String ADAPTER_TAG = PictureAdapter.class
-			.getSimpleName();
-	private String[] pictures;
-	private Context context;
-	private File DCIMDirectory;
-	private List<String> downloadedPictures;
-	private ImageView pictureView;
-	private ProgressBar loadingImageProgressBar;
+    public static final String ADAPTER_TAG = PictureAdapter.class.getSimpleName();
+    private String[] pictures;
+    private Context context;
+    private File DCIMDirectory;
+    private List<String> downloadedPictures;
+    private ImageView pictureView;
+    private ProgressBar loadingImageProgressBar;
 
-	public PictureAdapter(Context c) {
-		DCIMDirectory = new File(Environment.getExternalStorageDirectory(),
-				"DCIM/Camera/");
-		pictures = DCIMDirectory.list();
-		context = c;
-		if (pictures == null) {
-			Toast.makeText(context, context.getString(R.string.empty_dir),
-					Toast.LENGTH_LONG).show();
-		}
-		downloadedPictures = new ArrayList<String>();
+    public PictureAdapter(Context c) {
+        DCIMDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+        DCIMDirectory = new File(DCIMDirectory.getPath(), "/Camera");
 
-	}
+        pictures = DCIMDirectory.list();
+        context = c;
+        if (pictures == null) {
+            Toast.makeText(context, context.getString(R.string.empty_dir), Toast.LENGTH_LONG).show();
+        }
+        downloadedPictures = new ArrayList<String>();
 
-	@Override
-	public int getCount() {
-		if (pictures != null)
-			return pictures.length;
-		else
-			return 0;
-	}
+    }
 
-	@Override
-	public Object getItem(int index) {
-		return DCIMDirectory.getPath() + "/" + pictures[index];
-	}
+    @Override
+    public int getCount() {
+        if (pictures != null)
+            return pictures.length;
+        else
+            return 0;
+    }
 
-	@Override
-	public long getItemId(int arg0) {
-		return 0;
-	}
+    @Override
+    public Object getItem(int index) {
+        return DCIMDirectory.getPath() + "/" + pictures[index];
+    }
 
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		int pictureWidth = 0;
-		int pictureHeight = 0;
-		Rect rectangle = new Rect();
-		((Activity) context).getWindow().getDecorView()
-				.getWindowVisibleDisplayFrame(rectangle);
-		int contentViewTop = ((Activity) context).getWindow()
-				.findViewById(Window.ID_ANDROID_CONTENT).getTop();
-		int statusBar = contentViewTop - rectangle.top;
+    @Override
+    public long getItemId(int arg0) {
+        return 0;
+    }
 
-		if (convertView == null) {
-			Display display = ((Activity) context).getWindowManager()
-					.getDefaultDisplay();
-			int screenOrientation = display.getOrientation();
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        int pictureWidth = 0;
+        int pictureHeight = 0;
+        Rect rectangle = new Rect();
+        ((Activity) context).getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
+        int contentViewTop = ((Activity) context).getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
+        int statusBar = contentViewTop - rectangle.top;
 
-			switch (screenOrientation) {
-			case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
-				pictureWidth = (int) (display.getWidth() / 3.5);
+        if (convertView == null) {
+            Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
+            int screenOrientation = display.getOrientation();
 
-				break;
-			case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
-				pictureWidth = (int) (display.getWidth() / 2.5);
+            switch (screenOrientation) {
+                case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
+                    pictureWidth = (int) (display.getWidth() / 3.5);
 
-				break;
-			}
-			pictureHeight = pictureWidth;
-			pictureView = new ImageView(context);
-			pictureView.setLayoutParams(new TwoWayGridView.LayoutParams(
-					pictureWidth, pictureHeight));
-			pictureView.setScaleType(ImageView.ScaleType.CENTER);
-			pictureView.setPadding(0, 0, 0, 0);
-		} else {
-			pictureView = (ImageView) convertView;
-		}
+                    break;
+                case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
+                    pictureWidth = (int) (display.getWidth() / 2.5);
 
-		String pictureDir = DCIMDirectory.getAbsolutePath() + "/"
-				+ pictures[position];
-		Drawable pictureDrawable = null;
-		Display display = ((Activity) context).getWindowManager()
-				.getDefaultDisplay();
-		int screenOrientation = display.getOrientation();
+                    break;
+            }
+            pictureHeight = pictureWidth;
+            pictureView = new ImageView(context);
+            pictureView.setLayoutParams(new TwoWayGridView.LayoutParams(pictureWidth, pictureHeight));
+            pictureView.setScaleType(ImageView.ScaleType.CENTER);
+            pictureView.setPadding(0, 0, 0, 0);
+        } else {
+            pictureView = (ImageView) convertView;
+        }
 
-		switch (screenOrientation) {
-		case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
-			pictureWidth = (int) (display.getWidth() / 3.5);
+        String pictureDir = DCIMDirectory.getAbsolutePath() + "/" + pictures[position];
+        Drawable pictureDrawable = null;
+        Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
+        int screenOrientation = display.getOrientation();
 
-			break;
-		case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
-			pictureWidth = (int) (display.getWidth() / 2.5);
+        switch (screenOrientation) {
+            case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
+                pictureWidth = (int) (display.getWidth() / 3.5);
 
-			break;
-		}
-		pictureHeight = pictureWidth;
-		if (pictureDir.substring(pictureDir.lastIndexOf("."),
-				pictureDir.lastIndexOf(".") + 4).equals(".jpg")) {
-			Log.d(ADAPTER_TAG, "try to decode file " + pictureDir);
+                break;
+            case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
+                pictureWidth = (int) (display.getWidth() / 2.5);
 
-			Picasso.with(context).load(new File(pictureDir))
-					.resize(pictureWidth, pictureHeight).centerCrop()
-					.into(pictureView);
+                break;
+        }
+        pictureHeight = pictureWidth;
+        if (pictureDir.substring(pictureDir.lastIndexOf("."), pictureDir.lastIndexOf(".") + 4).equals(".jpg")) {
+            Log.d(ADAPTER_TAG, "try to decode file " + pictureDir);
 
-		}
+            Picasso.with(context).load(new File(pictureDir)).resize(pictureWidth, pictureHeight).centerCrop()
+                    .into(pictureView);
 
-		return pictureView;
-	}
+        }
 
+        return pictureView;
+    }
 }
