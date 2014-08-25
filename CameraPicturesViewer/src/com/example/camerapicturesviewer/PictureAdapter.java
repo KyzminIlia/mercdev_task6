@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -35,41 +36,57 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.jess.ui.TwoWayGridView;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 public class PictureAdapter extends BaseAdapter {
     public static final String ADAPTER_TAG = PictureAdapter.class.getSimpleName();
-    private String[] pictures;
+    private String[] fileList;
+    private List<String> pictures;
     private Context context;
     private File DCIMDirectory;
-    private List<String> downloadedPictures;
-    private ImageView pictureView;
-    private ProgressBar loadingImageProgressBar;
+    private int pictureWidth = 0;
+    private int pictureHeight = 0;
+
+    public void checkForImages() {
+
+        pictures = new ArrayList<String>();
+        for (int i = 0; i < fileList.length; i++) {
+            if (fileList[i].substring(fileList[i].lastIndexOf("."), fileList[i].lastIndexOf(".") + 4).equals(".jpg")) {
+                pictures.add(fileList[i]);
+
+            }
+        }
+
+    }
 
     public PictureAdapter(Context c) {
         DCIMDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
         DCIMDirectory = new File(DCIMDirectory.getPath(), "/Camera");
 
-        pictures = DCIMDirectory.list();
+        fileList = DCIMDirectory.list();
         context = c;
-        if (pictures == null) {
+        if (fileList == null) {
             Toast.makeText(context, context.getString(R.string.empty_dir), Toast.LENGTH_LONG).show();
         }
-        downloadedPictures = new ArrayList<String>();
+        checkForImages();
+        if (pictures.get(0) == null) {
+            Toast.makeText(context, context.getString(R.string.empty_dir), Toast.LENGTH_LONG).show();
+        }
 
     }
 
     @Override
     public int getCount() {
         if (pictures != null)
-            return pictures.length;
+            return pictures.size();
         else
             return 0;
     }
 
     @Override
     public Object getItem(int index) {
-        return DCIMDirectory.getPath() + "/" + pictures[index];
+        return DCIMDirectory.getPath() + "/" + pictures.get(index);
     }
 
     @Override
@@ -79,59 +96,29 @@ public class PictureAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        int pictureWidth = 0;
-        int pictureHeight = 0;
-        Rect rectangle = new Rect();
-        ((Activity) context).getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
-        int contentViewTop = ((Activity) context).getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
-        int statusBar = contentViewTop - rectangle.top;
-
-        if (convertView == null) {
-            Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
-            int screenOrientation = display.getOrientation();
-
-            switch (screenOrientation) {
-                case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
-                    pictureWidth = (int) (display.getWidth() / 3.5);
-
-                    break;
-                case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
-                    pictureWidth = (int) (display.getWidth() / 2.5);
-
-                    break;
-            }
-            pictureHeight = pictureWidth;
-            pictureView = new ImageView(context);
-            pictureView.setLayoutParams(new TwoWayGridView.LayoutParams(pictureWidth, pictureHeight));
-            pictureView.setScaleType(ImageView.ScaleType.CENTER);
-            pictureView.setPadding(0, 0, 0, 0);
-        } else {
-            pictureView = (ImageView) convertView;
-        }
-
-        String pictureDir = DCIMDirectory.getAbsolutePath() + "/" + pictures[position];
-        Drawable pictureDrawable = null;
+        ImageView pictureView;
+        String pictureDir;
+        pictureView = (ImageView) convertView;
+        pictureDir = DCIMDirectory.getAbsolutePath() + "/" + pictures.get(position);
         Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
-        int screenOrientation = display.getOrientation();
+        int screenOrientation = context.getResources().getConfiguration().orientation;
 
         switch (screenOrientation) {
-            case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
+            case Configuration.ORIENTATION_LANDSCAPE:
                 pictureWidth = (int) (display.getWidth() / 3.5);
-
                 break;
-            case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
+            case Configuration.ORIENTATION_PORTRAIT:
                 pictureWidth = (int) (display.getWidth() / 2.5);
-
                 break;
         }
         pictureHeight = pictureWidth;
-        if (pictureDir.substring(pictureDir.lastIndexOf("."), pictureDir.lastIndexOf(".") + 4).equals(".jpg")) {
-            Log.d(ADAPTER_TAG, "try to decode file " + pictureDir);
-
-            Picasso.with(context).load(new File(pictureDir)).resize(pictureWidth, pictureHeight).centerCrop()
-                    .into(pictureView);
-
+        if (pictureView == null) {
+            pictureView = new ImageView(context);
         }
+        Log.d(ADAPTER_TAG, "try to decode file " + pictureDir);
+        pictureView.setImageBitmap(null);
+        Picasso.with(context).load(new File(pictureDir)).noFade().resize(pictureWidth, pictureHeight).centerCrop()
+                .into(pictureView);
 
         return pictureView;
     }
