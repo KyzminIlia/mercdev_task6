@@ -41,12 +41,21 @@ import com.squareup.picasso.Picasso;
 
 public class PictureAdapter extends BaseAdapter {
     public static final String ADAPTER_TAG = PictureAdapter.class.getSimpleName();
+
     private String[] fileList;
     private List<String> pictures;
+
     private Context context;
-    private File DCIMDirectory;
+
     private int pictureWidth = 0;
     private int pictureHeight = 0;
+
+    public PictureAdapter(Context c) {
+
+        fileList = getDCIMDirectory().list();
+        context = c;
+        checkForImages();
+    }
 
     public void checkForImages() {
 
@@ -60,20 +69,8 @@ public class PictureAdapter extends BaseAdapter {
 
     }
 
-    public PictureAdapter(Context c) {
-        DCIMDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-        DCIMDirectory = new File(DCIMDirectory.getPath(), "/Camera");
-
-        fileList = DCIMDirectory.list();
-        context = c;
-        if (fileList == null) {
-            Toast.makeText(context, context.getString(R.string.empty_dir), Toast.LENGTH_LONG).show();
-        }
-        checkForImages();
-        if (pictures.get(0) == null) {
-            Toast.makeText(context, context.getString(R.string.empty_dir), Toast.LENGTH_LONG).show();
-        }
-
+    public File getDCIMDirectory() {
+        return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath(), "/Camera");
     }
 
     @Override
@@ -86,23 +83,21 @@ public class PictureAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int index) {
-        return DCIMDirectory.getPath() + "/" + pictures.get(index);
+        return getDCIMDirectory().getPath() + "/" + pictures.get(index);
     }
 
     @Override
-    public long getItemId(int arg0) {
-        return 0;
+    public long getItemId(int index) {
+        return index;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ImageView pictureView;
-        String pictureDir;
-        pictureView = (ImageView) convertView;
-        pictureDir = DCIMDirectory.getAbsolutePath() + "/" + pictures.get(position);
-        Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
-        int screenOrientation = context.getResources().getConfiguration().orientation;
 
+        ImageView pictureView = (ImageView) convertView;
+        String pictureDir = getDCIMDirectory().getAbsolutePath() + "/" + pictures.get(position);
+        int screenOrientation = context.getResources().getConfiguration().orientation;
+        Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
         switch (screenOrientation) {
             case Configuration.ORIENTATION_LANDSCAPE:
                 pictureWidth = (int) (display.getWidth() / 3.5);

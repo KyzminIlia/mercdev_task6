@@ -19,35 +19,39 @@ public class PictureViewerActivity extends FragmentActivity implements TwoWayAda
     public static final String ACTIVITY_TAG = PictureViewerActivity.class.getSimpleName();
     private TwoWayGridView pictureGridView;
 
+    private int getStatusBarHeight() {
+        Rect rectgle = new Rect();
+        Window window = getWindow();
+        window.getDecorView().getWindowVisibleDisplayFrame(rectgle);
+        int StatusBarHeight = rectgle.top;
+        int contentViewTop = window.findViewById(Window.ID_ANDROID_CONTENT).getTop();
+        int statusBar = contentViewTop + StatusBarHeight;
+        return statusBar;
+    }
+
     @Override
     protected void onCreate(Bundle retainInstance) {
         super.onCreate(retainInstance);
-        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.a_picture_viewer);
         pictureGridView = (TwoWayGridView) findViewById(R.id.pictures_grid);
         pictureGridView.setAdapter(new PictureAdapter(this));
         pictureGridView.setOnItemClickListener(this);
+        pictureGridView.setEmptyView(findViewById(android.R.id.empty));
         Display display = getWindowManager().getDefaultDisplay();
         int orientation = getResources().getConfiguration().orientation;
         int pictureWidth = 0;
         int pictureHeight = 0;
-        Rect rectangle = new Rect();
-        getWindow().getDecorView().getWindowVisibleDisplayFrame(rectangle);
-        int contentViewTop = getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
-        int statusBar = contentViewTop - rectangle.top;
-
         switch (orientation) {
             case Configuration.ORIENTATION_LANDSCAPE:
                 pictureWidth = (int) (display.getWidth() / 3.5);
                 pictureGridView.setNumRows(2);
-                pictureHeight = (display.getHeight() - statusBar) / 2;
+                pictureHeight = (display.getHeight() - getStatusBarHeight()) / 2;
                 break;
             case Configuration.ORIENTATION_PORTRAIT:
                 pictureWidth = (int) (display.getWidth() / 2.5);
                 pictureGridView.setNumRows(4);
-                pictureHeight = (display.getHeight() - statusBar) / 4;
+                pictureHeight = (display.getHeight() - getStatusBarHeight()) / 4;
                 break;
         }
 
