@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res/com.example.camerapicturesviewer"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
     <com.jess.ui.TwoWayGridView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/pictures_grid"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:horizontalSpacing="1dp"
         app:scrollDirectionLandscape="horizontal"
         app:scrollDirectionPortrait="horizontal"
-        app:stretchMode="none"
+        app:stretchMode="columnWidth"
         app:verticalSpacing="1dp" />
 
     <TextView

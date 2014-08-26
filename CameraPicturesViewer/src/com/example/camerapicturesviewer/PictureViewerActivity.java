@@ -1,25 +1,56 @@
 package com.example.camerapicturesviewer;
 
-import com.jess.ui.TwoWayAdapterView;
-import com.jess.ui.TwoWayGridView;
-
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
+
+import com.jess.ui.TwoWayAdapterView;
+import com.jess.ui.TwoWayGridView;
 
 public class PictureViewerActivity extends FragmentActivity implements TwoWayAdapterView.OnItemClickListener {
 
     public static final String ACTIVITY_TAG = PictureViewerActivity.class.getSimpleName();
 
     private TwoWayGridView pictureGridView;
+
+    @Override
+    protected void onCreate(Bundle retainInstance) {
+        super.onCreate(retainInstance);
+
+        setContentView(R.layout.a_picture_viewer);
+        pictureGridView = (TwoWayGridView) findViewById(R.id.pictures_grid);
+        pictureGridView.setAdapter(new PictureAdapter(this));
+        pictureGridView.setOnItemClickListener(this);
+        pictureGridView.setEmptyView(findViewById(android.R.id.empty));
+        int orientation = getResources().getConfiguration().orientation;
+        int cellSize = 0;
+        switch (orientation) {
+            case Configuration.ORIENTATION_LANDSCAPE:
+                pictureGridView.setNumRows(2);
+                cellSize = (getScreenHeight() - getStatusBarHeight()) / 2;
+                break;
+            case Configuration.ORIENTATION_PORTRAIT:
+                pictureGridView.setNumRows(4);
+                cellSize = (getScreenHeight() - getStatusBarHeight()) / 4;
+                break;
+        }
+    }
+
+    @Override
+    public void onItemClick(TwoWayAdapterView<?> parent, View view, int position, long id) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.parse("file://" + pictureGridView.getAdapter().getItem(position)), "image/*");
+        startActivity(intent);
+
+    }
 
     private int getStatusBarHeight() {
         Rect rectgle = new Rect();
@@ -31,44 +62,12 @@ public class PictureViewerActivity extends FragmentActivity implements TwoWayAda
         return statusBar;
     }
 
-    @Override
-    protected void onCreate(Bundle retainInstance) {
-        super.onCreate(retainInstance);
-
-        setContentView(R.layout.a_picture_viewer);
-        pictureGridView = (TwoWayGridView) findViewById(R.id.pictures_grid);
-        pictureGridView.setAdapter(new PictureAdapter(this));
-        pictureGridView.setOnItemClickListener(this);
-        pictureGridView.setEmptyView(findViewById(android.R.id.empty));
+    private int getScreenHeight() {
         Display display = getWindowManager().getDefaultDisplay();
-        int orientation = getResources().getConfiguration().orientation;
-        int pictureWidth = 0;
-        int pictureHeight = 0;
-        switch (orientation) {
-            case Configuration.ORIENTATION_LANDSCAPE:
-                pictureWidth = (int) (display.getWidth() / 3.5);
-                pictureGridView.setNumRows(2);
-                pictureHeight = (display.getHeight() - getStatusBarHeight()) / 2;
-                break;
-            case Configuration.ORIENTATION_PORTRAIT:
-                pictureWidth = (int) (display.getWidth() / 2.5);
-                pictureGridView.setNumRows(4);
-                pictureHeight = (display.getHeight() - getStatusBarHeight()) / 4;
-                break;
-        }
-
-        pictureGridView.setColumnWidth(pictureWidth);
-        pictureGridView.setRowHeight(pictureHeight);
-
-    }
-
-    @Override
-    public void onItemClick(TwoWayAdapterView<?> parent, View view, int position, long id) {
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.parse("file://" + pictureGridView.getAdapter().getItem(position)), "image/*");
-        startActivity(intent);
-
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        int screenHeight = metrics.heightPixels;
+        return screenHeight;
     }
 
 }
