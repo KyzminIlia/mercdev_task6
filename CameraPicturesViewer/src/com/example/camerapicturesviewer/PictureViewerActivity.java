@@ -16,7 +16,9 @@ import android.view.Window;
 import android.view.WindowManager;
 
 public class PictureViewerActivity extends FragmentActivity implements TwoWayAdapterView.OnItemClickListener {
+
     public static final String ACTIVITY_TAG = PictureViewerActivity.class.getSimpleName();
+
     private TwoWayGridView pictureGridView;
 
     private int getStatusBarHeight() {
@@ -64,8 +66,7 @@ public class PictureViewerActivity extends FragmentActivity implements TwoWayAda
     public void onItemClick(TwoWayAdapterView<?> parent, View view, int position, long id) {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.parse("file://" + ((String) (pictureGridView.getAdapter().getItem(position)))),
-                "image/*");
+        intent.setDataAndType(Uri.parse("file://" + pictureGridView.getAdapter().getItem(position)), "image/*");
         startActivity(intent);
 
     }

@@ -60,9 +60,9 @@ public class PictureAdapter extends BaseAdapter {
     public void checkForImages() {
 
         pictures = new ArrayList<String>();
-        for (int i = 0; i < fileList.length; i++) {
-            if (fileList[i].substring(fileList[i].lastIndexOf("."), fileList[i].lastIndexOf(".") + 4).equals(".jpg")) {
-                pictures.add(fileList[i]);
+        for (String file : fileList) {
+            if (file.substring(file.lastIndexOf("."), file.lastIndexOf(".") + 4).equals(".jpg")) {
+                pictures.add(file);
 
             }
         }
